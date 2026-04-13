@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM Chatter — CVagency</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f8f8f7;color:#1a1a1a;min-height:100vh}
+  .header{background:#fff;border-bottom:1px solid #e8e8e6;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .logo{font-size:15px;font-weight:600;letter-spacing:-0.3px}
+  .logo span{font-size:11px;color:#999;display:block;font-weight:400;margin-top:1px}
+  .btn-add{background:#1a1a1a;color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer}
+  .btn-add:hover{background:#333}
+  .nav{background:#fff;border-bottom:1px solid #e8e8e6;padding:0 24px;display:flex;gap:0}
+  .nav-btn{padding:12px 16px;font-size:13px;font-weight:500;border:none;background:none;border-bottom:2px solid transparent;cursor:pointer;color:#999}
+  .nav-btn.active{color:#1a1a1a;border-bottom-color:#1a1a1a}
+  .nav-btn:hover:not(.active){color:#555}
+  .content{max-width:900px;margin:0 auto;padding:24px}
+  .page{display:none}.page.active{display:block}
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+  .metric{background:#fff;border:1px solid #ebebeb;border-radius:12px;padding:16px}
+  .metric-label{font-size:11px;color:#999;margin-bottom:6px;font-weight:500}
+  .metric-value{font-size:22px;font-weight:600;letter-spacing:-0.5px}
+  .metric-sub{font-size:11px;color:#bbb;margin-top:3px}
+  .card{background:#fff;border:1px solid #ebebeb;border-radius:12px;padding:20px;margin-bottom:16px}
+  .card-title{font-size:10px;font-weight:600;color:#bbb;text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px}
+  .row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f3f3f1}
+  .row:last-child{border-bottom:none}
+  .avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+  .av1{background:#dbeafe;color:#1d4ed8}.av2{background:#d1fae5;color:#065f46}.av3{background:#fce7f3;color:#9d174d}.av4{background:#ede9fe;color:#5b21b6}
+  .row-info{flex:1;min-width:0}
+  .row-name{font-size:14px;font-weight:500}
+  .row-meta{font-size:12px;color:#999;margin-top:1px}
+  .row-right{text-align:right;flex-shrink:0}
+  .row-salary{font-size:14px;font-weight:600}
+  .row-sub{font-size:11px;color:#bbb}
+  .badge{display:inline-block;font-size:11px;font-weight:500;padding:2px 8px;border-radius:6px;margin-top:3px}
+  .badge-green{background:#dcfce7;color:#166534}.badge-amber{background:#fef9c3;color:#854d0e}.badge-red{background:#fee2e2;color:#991b1b}.badge-gray{background:#f3f4f6;color:#6b7280}
+  .row-clickable{cursor:pointer;transition:background .1s;border-radius:8px;margin:0 -8px;padding:10px 8px}
+  .row-clickable:hover{background:#fafaf9}
+  .chevron{color:#ddd;font-size:14px;flex-shrink:0}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  .form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+  .form-group{display:flex;flex-direction:column;gap:5px}
+  .form-label{font-size:11px;color:#777;font-weight:500}
+  input,select{width:100%;padding:8px 12px;border:1px solid #e5e5e3;border-radius:8px;font-size:13px;font-family:inherit;background:#fff;color:#1a1a1a;outline:none}
+  input:focus,select:focus{border-color:#1a1a1a}
+  .section-sep{font-size:11px;font-weight:600;color:#bbb;text-transform:uppercase;letter-spacing:.08em;margin:16px 0 10px}
+  .preview-box{background:#f8f8f7;border-radius:10px;padding:14px;margin-bottom:14px}
+  .preview-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
+  .preview-row span:first-child{color:#999}
+  .preview-total{display:flex;justify-content:space-between;font-size:14px;font-weight:600;padding-top:10px;margin-top:8px;border-top:1px solid #e5e5e3}
+  .preview-total span:last-child{color:#2563eb}
+  .btn-save{background:#1a1a1a;color:#fff;border:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer}
+  .btn-save:hover{background:#333}.btn-save.saved{background:#16a34a}
+  .btn-secondary{background:#fff;color:#1a1a1a;border:1px solid #e5e5e3;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;margin-left:8px}
+  .qual-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f3f3f1}
+  .qual-item:last-child{border-bottom:none}
+  .qual-label{font-size:13px}.qual-pts{font-size:11px;color:#bbb}
+  .tog-group{display:flex;gap:6px}
+  .tog{width:32px;height:32px;border-radius:8px;border:1px solid #e5e5e3;background:#fff;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .tog.on{background:#dcfce7;border-color:#86efac;color:#16a34a}
+  .tog.off{background:#fee2e2;border-color:#fca5a5;color:#dc2626}
+  .score-bar-wrap{margin:12px 0 6px;height:6px;background:#f0f0ee;border-radius:3px;overflow:hidden}
+  .score-bar{height:100%;border-radius:3px;transition:width .3s}
+  .score-text{font-size:12px;color:#999}
+  .prime-item{display:flex;align-items:flex-start;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f3f3f1}
+  .prime-item:last-child{border-bottom:none}
+  .prime-name{font-size:13px;font-weight:500;margin-bottom:3px}
+  .prime-reason{font-size:12px;color:#999}
+  .prime-right{text-align:right;flex-shrink:0;margin-left:12px}
+  .prime-date{font-size:11px;color:#ccc;margin-top:4px}
+  .del-btn{background:none;border:none;cursor:pointer;color:#ddd;font-size:14px;padding:2px 4px}
+  .del-btn:hover{color:#ef4444}
+  .back-btn{display:flex;align-items:center;gap:6px;background:none;border:none;font-size:13px;color:#999;cursor:pointer;margin-bottom:16px;padding:0}
+  .back-btn:hover{color:#1a1a1a}
+  .detail-header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+  .detail-name{font-size:18px;font-weight:600}
+  .detail-meta{font-size:13px;color:#999;margin-top:2px}
+  .month-perf{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #f3f3f1}
+  .month-perf:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+  .month-title{font-size:11px;font-weight:600;color:#888;margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em}
+  .calc-row{display:flex;justify-content:space-between;font-size:13px;padding:2px 0}
+  .calc-row span:first-child{color:#999}
+  .calc-total{display:flex;justify-content:space-between;font-size:14px;font-weight:600;padding-top:8px;margin-top:6px;border-top:1px solid #f0f0ee}
+  .calc-total span:last-child{color:#2563eb}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
+  .modal-overlay.open{display:flex}
+  .modal{background:#fff;border-radius:16px;padding:24px;width:360px;max-width:90vw}
+  .modal-title{font-size:15px;font-weight:600;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+  .modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:#bbb}
+  .modal-close:hover{color:#1a1a1a}
+  .month-picker{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+  .month-picker select{width:auto;font-size:13px}
+  .empty{text-align:center;padding:32px;font-size:13px;color:#bbb}
+  @media(max-width:600px){.metrics{grid-template-columns:1fr 1fr}.form-grid-3{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">CRM Chatter <span>CVagency</span></div>
+  <button class="btn-add" onclick="openModal()">+ Ajouter chatter</button>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="switchTab('dashboard',this)">Dashboard</button>
+  <button class="nav-btn" onclick="switchTab('chatters',this)">Chatters</button>
+  <button class="nav-btn" onclick="switchTab('performance',this)">Performance</button>
+  <button class="nav-btn" onclick="switchTab('primes',this)">Primes & sanctions</button>
+</div>
+
+<div class="content">
+  <!-- DASHBOARD -->
+  <div id="tab-dashboard" class="page active">
+    <div class="month-picker">
+      <span style="font-size:12px;color:#999">Période</span>
+      <select id="dash-month" onchange="renderDashboard()">
+        <option value="4-2026">Avril 2026</option>
+        <option value="3-2026">Mars 2026</option>
+        <option value="2-2026">Février 2026</option>
+        <option value="1-2026">Janvier 2026</option>
+      </select>
+    </div>
+    <div class="metrics" id="dash-metrics"></div>
+    <div class="card"><div class="card-title">Classement chatters</div><div id="dash-ranking"></div></div>
+  </div>
+
+  <!-- CHATTERS -->
+  <div id="tab-chatters" class="page">
+    <div id="chatters-list">
+      <div class="card"><div class="card-title">Équipe active</div><div id="chatters-rows"></div></div>
+    </div>
+    <div id="chatter-detail" style="display:none"></div>
+  </div>
+
+  <!-- PERFORMANCE -->
+  <div id="tab-performance" class="page">
+    <div class="card">
+      <div class="card-title">Saisir données du mois</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Chatter</label><select id="p-chatter" onchange="autofillPct()"></select></div>
+        <div class="form-group"><label class="form-label">Mois</label><select id="p-month"><option value="4-2026">Avril 2026</option><option value="3-2026">Mars 2026</option><option value="2-2026">Février 2026</option></select></div>
+      </div>
+      <div class="section-sep">Reveal <span style="font-weight:400;text-transform:none;letter-spacing:0">(TVA déjà déduite)</span></div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">CA Reveal (€)</label><input type="number" id="p-rca" placeholder="1685.15" oninput="updatePreview()"></div>
+        <div class="form-group"><label class="form-label">% commission</label><input type="number" id="p-rpct" oninput="updatePreview()"></div>
+      </div>
+      <div class="section-sep">Inflow / OnlyFans <span style="font-weight:400;text-transform:none;letter-spacing:0">(montant brut $)</span></div>
+      <div class="form-grid-3">
+        <div class="form-group"><label class="form-label">CA Inflow ($)</label><input type="number" id="p-ica" placeholder="800" oninput="updatePreview()"></div>
+        <div class="form-group"><label class="form-label">% commission</label><input type="number" id="p-ipct" oninput="updatePreview()"></div>
+        <div class="form-group"><label class="form-label">Taux EUR/USD</label><input type="number" id="p-eur" value="0.92" step="0.001" oninput="updatePreview()"></div>
+      </div>
+      <div id="preview-box" class="preview-box" style="display:none">
+        <div class="card-title" style="margin-bottom:10px">Aperçu du calcul</div>
+        <div class="preview-row"><span>Reveal net (−18%)</span><span id="pr-rnet"></span></div>
+        <div class="preview-row"><span>Commission Reveal</span><span id="pr-rcom"></span></div>
+        <div class="preview-row"><span>Inflow net OF (−20%) en €</span><span id="pr-inet"></span></div>
+        <div class="preview-row"><span>Commission Inflow</span><span id="pr-icom"></span></div>
+        <div class="preview-total"><span>Salaire total</span><span id="pr-total"></span></div>
+      </div>
+      <button class="btn-save" id="btn-save-perf" onclick="savePerf()">Enregistrer</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Évaluation qualité</div>
+      <div class="form-grid" style="margin-bottom:14px">
+        <div class="form-group"><label class="form-label">Chatter</label><select id="q-chatter"></select></div>
+        <div class="form-group"><label class="form-label">Semaine</label><select id="q-week"><option value="S15">Semaine 15 (7–13 avr)</option><option value="S14">Semaine 14 (31 mar–6 avr)</option><option value="S13">Semaine 13</option></select></div>
+      </div>
+      <div id="qual-list"></div>
+      <div class="score-bar-wrap"><div class="score-bar" id="score-bar" style="width:0%;background:#86efac"></div></div>
+      <div class="score-text">Score qualité : <strong id="score-val">0</strong>/100</div>
+      <button class="btn-save" id="btn-save-qual" onclick="saveQual()" style="margin-top:14px">Enregistrer évaluation</button>
+    </div>
+  </div>
+
+  <!-- PRIMES -->
+  <div id="tab-primes" class="page">
+    <div class="card">
+      <div class="card-title">Ajouter prime / sanction</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Chatter</label><select id="pr-chatter"></select></div>
+        <div class="form-group"><label class="form-label">Type</label><select id="pr-type"><option value="prime">Prime</option><option value="sanction">Sanction</option></select></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Montant (€)</label><input type="number" id="pr-amount" placeholder="50"></div>
+        <div class="form-group"><label class="form-label">Mois impacté</label><select id="pr-month"><option value="4-2026">Avril 2026</option><option value="3-2026">Mars 2026</option><option value="2-2026">Février 2026</option></select></div>
+      </div>
+      <div class="form-group" style="margin-bottom:14px"><label class="form-label">Motif</label><input type="text" id="pr-reason" placeholder="ex: Excellent taux de déblocage"></div>
+      <button class="btn-save" id="btn-save-prime" onclick="savePrime()">Ajouter</button>
+    </div>
+    <div class="card"><div class="card-title">Historique</div><div id="primes-list"></div></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title">Nouveau chatter <button class="modal-close" onclick="closeModal()">×</button></div>
+    <div class="form-group" style="margin-bottom:10px"><label class="form-label">Nom</label><input type="text" id="m-name" placeholder="ex: Cédric"></div>
+    <div class="form-group" style="margin-bottom:10px"><label class="form-label">Plateformes</label><select id="m-platforms"><option value="Reveal + Inflow">Reveal + Inflow</option><option value="Reveal only">Reveal uniquement</option><option value="Inflow only">Inflow uniquement</option></select></div>
+    <div class="form-grid" style="margin-bottom:0">
+      <div class="form-group"><label class="form-label">% Reveal</label><input type="number" id="m-rpct" value="25"></div>
+      <div class="form-group"><label class="form-label">% Inflow</label><input type="number" id="m-ipct" value="25"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:18px">
+      <button class="btn-save" onclick="addChatter()" style="flex:1">Ajouter</button>
+      <button class="btn-secondary" onclick="closeModal()" style="flex:1">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CRITERES=[{id:'upsell',label:'Tentatives upsell PPV',w:20},{id:'reponse',label:'Temps de réponse < 15 min',w:20},{id:'script',label:'Respect du script',w:20},{id:'ppv',label:'PPV envoyés (quota atteint)',w:20},{id:'comportement',label:'Comportement & sérieux',w:20}];
+const MONTHS={'4-2026':'Avril 2026','3-2026':'Mars 2026','2-2026':'Février 2026','1-2026':'Janvier 2026'};
+const AVCOLORS=['av1','av2','av3','av4'];
+
+function load(){try{return JSON.parse(localStorage.getItem('cvagency-crm')||'null')||defaultState()}catch(e){return defaultState()}}
+function defaultState(){return{chatters:[{id:1,name:'Cédric',platforms:'Reveal + Inflow',rPct:25,iPct:25},{id:2,name:'Mahery',platforms:'Reveal + Inflow',rPct:30,iPct:30}],perfs:[{id:'p1',cid:1,month:'4-2026',rCA:1685.15,rPct:25,iCA:800,iPct:25,eur:0.92},{id:'p2',cid:2,month:'4-2026',rCA:2100,rPct:30,iCA:1200,iPct:30,eur:0.92}],quals:[],primes:[],nextId:3}}
+function save(){localStorage.setItem('cvagency-crm',JSON.stringify(S))}
+let S=load();
+
+function calc(p){const rn=p.rCA*.82,rc=rn*(p.rPct/100),in_=p.iCA*.80*p.eur,ic=in_*(p.iPct/100);return{rn,rc,in:in_,ic,total:rc+ic}}
+function fmt(n){return n.toFixed(2)+' €'}
+function fmtS(n){return Math.round(n).toLocaleString('fr-FR')+' €'}
+function initials(name){return name.slice(0,2).toUpperCase()}
+function avColor(id){return AVCOLORS[(id-1)%AVCOLORS.length]}
+function getPrimesNet(cid,month){return S.primes.filter(p=>(!cid||p.cid===cid)&&p.month===month).reduce((a,p)=>a+(p.type==='prime'?p.amount:-p.amount),0)}
+function getQualScore(cid){const q=S.quals.filter(q=>q.cid===cid);return q.length?q[q.length-1].score:null}
+
+let qualChecks={};
+
+function switchTab(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='dashboard')renderDashboard();
+  if(id==='chatters'){document.getElementById('chatters-list').style.display='';document.getElementById('chatter-detail').style.display='none';renderChatters();}
+  if(id==='performance'){fillSelects();renderQualList();}
+  if(id==='primes'){fillSelects();renderPrimes();}
+}
+
+function renderDashboard(){
+  const month=document.getElementById('dash-month').value;
+  const perfs=S.perfs.filter(p=>p.month===month);
+  const totalCA=perfs.reduce((a,p)=>a+p.rCA+p.iCA*p.eur,0);
+  const totalSal=perfs.reduce((a,p)=>a+calc(p).total,0);
+  const primesNet=getPrimesNet(null,month);
+  document.getElementById('dash-metrics').innerHTML=[
+    {l:'CA total agence',v:fmtS(totalCA),s:'Reveal + Inflow'},
+    {l:'Salaires à verser',v:fmtS(totalSal),s:perfs.length+' chatter(s)'},
+    {l:'Chatters actifs',v:S.chatters.length,s:'total'},
+    {l:'Primes nettes',v:fmtS(primesNet),s:'ce mois'},
+  ].map(m=>`<div class="metric"><div class="metric-label">${m.l}</div><div class="metric-value">${m.v}</div><div class="metric-sub">${m.s}</div></div>`).join('');
+  const sorted=[...perfs].sort((a,b)=>calc(b).total-calc(a).total);
+  document.getElementById('dash-ranking').innerHTML=sorted.length?sorted.map((p,i)=>{
+    const c=S.chatters.find(c=>c.id===p.cid);if(!c)return'';
+    const s=calc(p),pm=getPrimesNet(c.id,month),qs=getQualScore(c.id);
+    const badge=qs!==null?`<div class="badge ${qs>=80?'badge-green':qs>=50?'badge-amber':'badge-red'}" style="margin-top:4px">${qs}/100</div>`:'';
+    return`<div class="row"><span style="font-size:13px;color:#ccc;width:18px">${i+1}</span><div class="avatar ${avColor(c.id)}">${initials(c.name)}</div><div class="row-info"><div class="row-name">${c.name}</div><div class="row-meta">${c.platforms}</div></div><div class="row-right">${badge}<div class="row-salary">${fmt(s.total+pm)}</div><div class="row-sub">commission</div></div></div>`;
+  }).join(''):`<div class="empty">Aucune donnée pour ce mois</div>`;
+}
+
+function renderChatters(){
+  document.getElementById('chatters-rows').innerHTML=S.chatters.length?S.chatters.map(c=>{
+    const p=S.perfs.find(p=>p.cid===c.id&&p.month==='4-2026');
+    const sal=p?fmt(calc(p).total):'—';
+    const qs=getQualScore(c.id);
+    const badge=qs!==null?`<span class="badge ${qs>=80?'badge-green':qs>=50?'badge-amber':'badge-red'}">Qualité ${qs}/100</span>`:'';
+    return`<div class="row row-clickable" onclick="openChatter(${c.id})"><div class="avatar ${avColor(c.id)}">${initials(c.name)}</div><div class="row-info"><div class="row-name">${c.name}</div><div class="row-meta">${c.platforms} · ${c.rPct}% / ${c.iPct}%</div><div style="margin-top:4px">${badge}</div></div><div class="row-right"><div class="row-salary">${sal}</div><div class="row-sub">avr. 2026</div></div><span class="chevron">›</span></div>`;
+  }).join(''):`<div class="empty">Aucun chatter — ajoutes-en un</div>`;
+}
+
+function openChatter(id){
+  const c=S.chatters.find(c=>c.id===id);
+  document.getElementById('chatters-list').style.display='none';
+  const detail=document.getElementById('chatter-detail');
+  detail.style.display='';
+  const perfs=S.perfs.filter(p=>p.cid===id);
+  const perfsHTML=perfs.length?perfs.map(p=>{
+    const s=calc(p),pm=getPrimesNet(id,p.month);
+    return`<div class="month-perf"><div class="month-title">${MONTHS[p.month]||p.month}</div>
+    <div class="calc-row"><span>CA Reveal</span><span>${fmt(p.rCA)}</span></div>
+    <div class="calc-row"><span>Reveal net (−18%)</span><span>${fmt(s.rn)}</span></div>
+    <div class="calc-row"><span>Commission Reveal (${p.rPct}%)</span><span>${fmt(s.rc)}</span></div>
+    <div class="calc-row"><span>Inflow net (−20%) en €</span><span>${fmt(s.in)}</span></div>
+    <div class="calc-row"><span>Commission Inflow (${p.iPct}%)</span><span>${fmt(s.ic)}</span></div>
+    ${pm!==0?`<div class="calc-row"><span>Primes / sanctions</span><span style="color:${pm>0?'#16a34a':'#dc2626'};font-weight:500">${pm>0?'+':''}${fmt(pm)}</span></div>`:''}
+    <div class="calc-total"><span>Total à verser</span><span>${fmt(s.total+pm)}</span></div></div>`;
+  }).join(''):`<div class="empty">Aucune donnée</div>`;
+  detail.innerHTML=`<button class="back-btn" onclick="backToList()">← Retour</button>
+  <div class="detail-header"><div class="avatar ${avColor(c.id)}" style="width:44px;height:44px;font-size:14px">${initials(c.name)}</div><div><div class="detail-name">${c.name}</div><div class="detail-meta">${c.platforms} · Reveal ${c.rPct}% / Inflow ${c.iPct}%</div></div></div>
+  <div class="card"><div class="card-title">Commissions par mois</div>${perfsHTML}</div>
+  <button onclick="removeChatter(${id})" style="margin-top:8px;background:none;border:none;font-size:12px;color:#fca5a5;cursor:pointer">Supprimer ce chatter</button>`;
+}
+
+function backToList(){document.getElementById('chatters-list').style.display='';document.getElementById('chatter-detail').style.display='none';renderChatters();}
+function removeChatter(id){if(confirm('Supprimer ce chatter ?')){S.chatters=S.chatters.filter(c=>c.id!==id);save();backToList();}}
+
+function fillSelects(){
+  ['p-chatter','q-chatter','pr-chatter'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    const cur=el.value;
+    el.innerHTML=S.chatters.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+    if(cur)el.value=cur;
+  });
+}
+
+function autofillPct(){
+  const c=S.chatters.find(c=>c.id===parseInt(document.getElementById('p-chatter').value));
+  if(c){document.getElementById('p-rpct').value=c.rPct;document.getElementById('p-ipct').value=c.iPct;}
+  updatePreview();
+}
+
+function updatePreview(){
+  const rCA=parseFloat(document.getElementById('p-rca').value)||0;
+  const rPct=parseFloat(document.getElementById('p-rpct').value)||0;
+  const iCA=parseFloat(document.getElementById('p-ica').value)||0;
+  const iPct=parseFloat(document.getElementById('p-ipct').value)||0;
+  const eur=parseFloat(document.getElementById('p-eur').value)||0.92;
+  if(!rCA&&!iCA){document.getElementById('preview-box').style.display='none';return;}
+  const p={rCA,rPct,iCA,iPct,eur};const s=calc(p);
+  document.getElementById('preview-box').style.display='';
+  document.getElementById('pr-rnet').textContent=fmt(s.rn);
+  document.getElementById('pr-rcom').textContent=fmt(s.rc);
+  document.getElementById('pr-inet').textContent=fmt(s.in);
+  document.getElementById('pr-icom').textContent=fmt(s.ic);
+  document.getElementById('pr-total').textContent=fmt(s.total);
+}
+
+function savePerf(){
+  const cid=parseInt(document.getElementById('p-chatter').value);
+  const month=document.getElementById('p-month').value;
+  const entry={id:'p-'+Date.now(),cid,month,rCA:parseFloat(document.getElementById('p-rca').value)||0,rPct:parseFloat(document.getElementById('p-rpct').value)||0,iCA:parseFloat(document.getElementById('p-ica').value)||0,iPct:parseFloat(document.getElementById('p-ipct').value)||0,eur:parseFloat(document.getElementById('p-eur').value)||0.92};
+  const i=S.perfs.findIndex(p=>p.cid===cid&&p.month===month);
+  if(i>=0)S.perfs[i]=entry;else S.perfs.push(entry);
+  save();
+  const btn=document.getElementById('btn-save-perf');btn.textContent='✓ Enregistré';btn.classList.add('saved');
+  setTimeout(()=>{btn.textContent='Enregistrer';btn.classList.remove('saved');},2000);
+  document.getElementById('p-rca').value='';document.getElementById('p-ica').value='';
+  document.getElementById('preview-box').style.display='none';
+}
+
+function renderQualList(){
+  qualChecks={};
+  document.getElementById('qual-list').innerHTML=CRITERES.map(c=>`
+    <div class="qual-item"><div><div class="qual-label">${c.label}</div><div class="qual-pts">${c.w} pts</div></div>
+    <div class="tog-group">
+      <button class="tog" id="ton-${c.id}" onclick="setTog('${c.id}',true)">✓</button>
+      <button class="tog" id="tof-${c.id}" onclick="setTog('${c.id}',false)">✕</button>
+    </div></div>`).join('');
+  updateScore();
+}
+
+function setTog(id,val){
+  qualChecks[id]=val;
+  document.getElementById('ton-'+id).className='tog'+(val?' on':'');
+  document.getElementById('tof-'+id).className='tog'+(!val?' off':'');
+  updateScore();
+}
+
+function updateScore(){
+  const score=CRITERES.reduce((a,c)=>a+(qualChecks[c.id]===true?c.w:0),0);
+  document.getElementById('score-val').textContent=score;
+  const bar=document.getElementById('score-bar');
+  bar.style.width=score+'%';
+  bar.style.background=score>=80?'#86efac':score>=50?'#fde047':'#fca5a5';
+}
+
+function saveQual(){
+  const cid=parseInt(document.getElementById('q-chatter').value);
+  const week=document.getElementById('q-week').value;
+  const score=CRITERES.reduce((a,c)=>a+(qualChecks[c.id]===true?c.w:0),0);
+  S.quals.push({id:'q-'+Date.now(),cid,week,score});save();
+  renderQualList();
+  const btn=document.getElementById('btn-save-qual');btn.textContent='✓ Enregistré';btn.classList.add('saved');
+  setTimeout(()=>{btn.textContent='Enregistrer évaluation';btn.classList.remove('saved');},2000);
+}
+
+function renderPrimes(){
+  document.getElementById('primes-list').innerHTML=S.primes.length?[...S.primes].reverse().map(p=>{
+    const c=S.chatters.find(c=>c.id===p.cid);
+    return`<div class="prime-item"><div><div class="prime-name">${c?.name||'?'} <span class="badge ${p.type==='prime'?'badge-green':'badge-red'}">${p.type==='prime'?'+':'−'}${fmt(p.amount)}</span> <span class="badge badge-gray">${MONTHS[p.month]||p.month}</span></div><div class="prime-reason">${p.reason}</div></div><div class="prime-right"><div class="prime-date">${p.date}</div><button class="del-btn" onclick="deletePrime('${p.id}')">🗑</button></div></div>`;
+  }).join(''):`<div class="empty">Aucun enregistrement</div>`;
+}
+
+function savePrime(){
+  const cid=parseInt(document.getElementById('pr-chatter').value);
+  const amount=parseFloat(document.getElementById('pr-amount').value)||0;
+  const reason=document.getElementById('pr-reason').value;
+  if(!amount||!reason)return;
+  S.primes.push({id:'pr-'+Date.now(),cid,type:document.getElementById('pr-type').value,amount,month:document.getElementById('pr-month').value,reason,date:new Date().toLocaleDateString('fr-FR')});
+  save();renderPrimes();
+  document.getElementById('pr-amount').value='';document.getElementById('pr-reason').value='';
+  const btn=document.getElementById('btn-save-prime');btn.textContent='✓ Ajouté';btn.classList.add('saved');
+  setTimeout(()=>{btn.textContent='Ajouter';btn.classList.remove('saved');},2000);
+}
+
+function deletePrime(id){S.primes=S.primes.filter(p=>p.id!==id);save();renderPrimes();}
+
+function openModal(){document.getElementById('modal').classList.add('open');setTimeout(()=>document.getElementById('m-name').focus(),100);}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+function addChatter(){
+  const name=document.getElementById('m-name').value.trim();
+  if(!name)return;
+  S.chatters.push({id:S.nextId++,name,platforms:document.getElementById('m-platforms').value,rPct:parseFloat(document.getElementById('m-rpct').value)||25,iPct:parseFloat(document.getElementById('m-ipct').value)||25});
+  save();closeModal();fillSelects();renderChatters();
+  document.getElementById('m-name').value='';
+}
+
+document.getElementById('m-name').addEventListener('keydown',e=>{if(e.key==='Enter')addChatter();});
+
+renderDashboard();
+fillSelects();
+renderQualList();
+renderPrimes();
+</script>
+</body>
+</html>
